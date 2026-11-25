@@ -1,0 +1,3 @@
+<template>
+<svg aria-hidden="true" focusable="false" class="optic-art" viewBox="0 0 520 356" xmlns="http://www.w3.org/2000/svg"><g class="pane bottom-pane"><use href="#plate" x="7" y="100" fill="url(#glass-back)" color="var(--glass-back-rim)" style="--shine:var(--glass-back-shine)"/></g><g class="pane middle-pane"><use href="#plate" x="-6" y="50" fill="url(#glass-middle)" color="var(--glass-middle-rim)" style="--shine:var(--glass-middle-shine)"/></g><g class="pane top-pane"><use href="#plate" x="2" fill="url(#glass-front)" color="var(--glass-front-rim)" style="--shine:var(--glass-front-shine)"/></g></svg>
+</template>

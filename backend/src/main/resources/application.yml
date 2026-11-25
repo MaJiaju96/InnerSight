@@ -1,0 +1,15 @@
+server:
+  port: ${INNERSIGHT_PORT:8080}
+  error:
+    include-message: never
+    include-stacktrace: never
+spring:
+  datasource:
+    url: ${INNERSIGHT_DB_URL:jdbc:mariadb://127.0.0.1:3306/innersight_dev}
+    username: ${INNERSIGHT_DB_USER:innersight}
+    password: ${INNERSIGHT_DB_PASSWORD:}
+    hikari:
+      connection-timeout: 2500
+innersight:
+  origin: ${INNERSIGHT_ORIGIN:http://localhost:5173}
+  secure-cookie: ${INNERSIGHT_SECURE_COOKIE:true}

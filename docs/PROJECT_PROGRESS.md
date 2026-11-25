@@ -1,10 +1,10 @@
 # 内观（InnerSight）项目总进度
 
-更新：2026-11-24。阶段边界以[项目书](01-project-proposal.md)为准；单个需求的过程与证据见 [PRD 进度](PRD_PROGRESS.md)。这里记录实际交付，不以文档完成度估算开发百分比。
+更新：2026-11-25。阶段边界以[项目书](01-project-proposal.md)为准；单个需求的过程与证据见 [PRD 进度](PRD_PROGRESS.md)。这里记录实际交付，不以文档完成度估算开发百分比。
 
 | 里程碑 | 状态 | 当前依据 | 下一步 / 退出条件 |
 |---|---|---|---|
-| S0 工程骨架与通用后台 | 「折光」方向已确认，双主题整套稿待终审，未开发 | [项目搭建需求分析](features/feature-20261124154000-项目搭建/01-requirements.md)与 [PRD](features/feature-20261124154000-项目搭建/02-prd.md)已确认，[UI 文字设计](features/feature-20261124154000-项目搭建/03-ui-design.md)与 Pixso [浅色总览](https://pixso.cn/app/design/NYBXHNEYrfdASgLhilojEg?page-id=6%3A198&item-id=6%3A199)、[深色总览](https://pixso.cn/app/design/NYBXHNEYrfdASgLhilojEg?page-id=6%3A2344&item-id=6%3A2345)已成稿，每套 21 张。登录与首页另有[可切主题的动效样例](features/feature-20261124154000-项目搭建/04-motion-study.html)。当前无 Git 仓库、应用代码或构建配置。 | 待项目发起人确认视觉效果，再按已确认的 PRD 和 UI 开发。真实登录、管理及撤权在测试分支验收并发布后，登记 S0 交付依据。 |
+| S0 工程骨架与通用后台 | 双主题已指定为开发依据，S0 开发中 | [项目搭建需求分析](features/feature-20261124154000-项目搭建/01-requirements.md)与 [PRD](features/feature-20261124154000-项目搭建/02-prd.md)已确认，[UI 文字设计](features/feature-20261124154000-项目搭建/03-ui-design.md)与 Pixso [浅色总览](https://pixso.cn/app/design/NYBXHNEYrfdASgLhilojEg?page-id=6%3A198&item-id=6%3A199)、[深色总览](https://pixso.cn/app/design/NYBXHNEYrfdASgLhilojEg?page-id=6%3A2344&item-id=6%3A2345)已成稿，每套 21 张。登录与首页另有[可切主题的动效样例](features/feature-20261124154000-项目搭建/04-motion-study.html)。已建立 Git 文档基线 `d51a76f`，在功能分支开发。已确认[数据库技术方案](02-technical-design.md)：主库为 MariaDB Server 10.11.19。 | MariaDB 适配已完成并通过同版本本地实库自测；正式 `test` 候选验收未执行。以两套 Pixso 画板实施，视觉验收另记。真实登录、管理及撤权在测试分支验收并发布后，登记 S0 交付依据。 |
 | S1 业务基础 | 未开始 | 项目书规划；无当期交付 | 独立拆分题库、固定套题与规则组卷等需求。 |
 | S2 文字面试与复盘 | 未开始 | 项目书规划；无当期交付 | 结合 S1 的可用题库，拆分文字面试、追问与证据评价。 |
 | S3 主项目增强 | 候选，未排期 | 方向已记录 | 按实际训练中发现的问题立项。 |
