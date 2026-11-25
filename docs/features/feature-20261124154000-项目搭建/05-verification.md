@@ -143,3 +143,8 @@
 - 02／17 常驻改密规则，17 使用桌面 1008px 实底表单；04–06／13 补齐列表说明、20／50／100 分页和初始／搜索空态；07–10／12／18–19 对齐新建、授权差异、权限分组、危险确认、冲突、重置及内置角色说明；14 补齐全屏身份区、分隔和固定返回底栏；15 在 320px 下使用 288px 认证卡；20 限流保留登录名并清空密码，结果未知不能重复保存。
 - 功能分支：`npm --prefix frontend run typecheck`、`test`、`build` 通过（4 项单测，42 modules transformed）；构建后在 `frontend` 运行 `node tests/visual-s0.mjs`，Edge 输出 `captured 52 failed 0`；`npm run test:visual` 输出 `Browser smoke PASS`。`mvn -B -f backend/pom.xml '-Dtest=IdentityRulesTest,WebContractTest' verify` 输出 `Tests run: 13, Failures: 0, Errors: 0, Skipped: 0` 和 `BUILD SUCCESS`。浏览器使用固定 API，非像素级签核；无后端实现、API 契约或 schema 变更，未写入数据库。
 - `test` 候选 `e21fa49`：重新构建，类型检查及 4 项前端单测通过；Edge 两种主题共 52 个状态，`captured 52 failed 0`，无横向溢出及 JS 异常。Maven 选择 `IdentityRulesTest,WebContractTest,MariaDbAcceptanceTest#sessionBoundariesOnExistingTestSchema` 执行 `verify`，远程 `10.11.19-MariaDB-0+deb12u1 | innersight_test`：`Tests run: 14, Failures: 0, Errors: 0, Skipped: 0`、`BUILD SUCCESS`。实库用例使用回滚事务，未迁移、清库或触及其他库。此次仅为 `test` 部分回归，未进入 `master` 全量回归或发布。
+
+### 画板 15／17 尺寸精修（2026-11-25）
+
+- UI 候选 `3f26901`，功能分支经 `dev` 快进至本地 `test`。仅调整窄屏登录无效状态及主动改密表单间距，不锁死高度。Edge 在浅、深主题实测：15 为 `288×461px`，17 为 `1008×528px`；02 与 10 保留内容自适应（分别 `456×610px`、`488×340px`）。
+- 在 `frontend` 重跑 `npm run typecheck`、`npm run test`（4 项通过）、`npm run build`（42 modules transformed）和 `node tests/visual-s0.mjs`（`captured 52 failed 0`）。`node tests/visual-smoke.mjs` 输出 `Browser smoke PASS`。新增尺寸回归断言；使用模拟 API，未改后端代码、未连数据库，未进入 `master`。
