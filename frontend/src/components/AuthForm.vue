@@ -36,8 +36,8 @@ async function submit() {
     }
     current.value = next.value = repeat.value = ''
   } catch (failure) {
-    if (failure instanceof ApiError && failure.code === 'LOGIN_FAILED') {
-      current.value = ''; fail('current', message(failure))
+    if (props.mode === 'login' && failure instanceof ApiError && (failure.code === 'LOGIN_FAILED' || failure.status === 429)) {
+      current.value = ''; visible.value = false; fail('current', message(failure))
     } else if (failure instanceof ApiError && failure.status === 401) emit('expired')
     else if (props.mode !== 'login' && failure instanceof ApiError && (failure.status === 0 || failure.status >= 500)) {
       current.value = next.value = repeat.value = ''
@@ -48,7 +48,7 @@ async function submit() {
 </script>
 
 <template>
-  <form ref="form" class="auth" novalidate @submit.prevent="submit">
+  <form ref="form" class="auth" :class="{ 'temporary-form': mode === 'temporary' }" novalidate @submit.prevent="submit">
     <div class="auth-top"><span class="micro with-rule" lang="en">ACCOUNT ACCESS</span><svg class="ico crosshair" aria-hidden="true"><use href="#i-plus" /></svg></div>
     <h1 tabindex="-1">{{ mode === 'login' ? '登录后台' : mode === 'temporary' ? '设置新密码' : '修改密码' }}</h1>
     <p class="auth-desc">{{ mode === 'login' ? '使用你的账号登录内观后台。' : mode === 'temporary' ? '当前使用临时密码。设置新密码后，请重新登录。' : '修改密码将结束此账号的所有会话。' }}</p>
@@ -72,7 +72,7 @@ async function submit() {
       <div class="field">
         <label for="next">新密码</label>
         <div class="input-wrap" :class="{ bad: invalid === 'next' }">
-          <input id="next" v-model="next" type="password" placeholder="请输入新密码" required autocomplete="new-password" :aria-invalid="invalid === 'next'" :aria-describedby="invalid === 'next' ? 'form-message' : undefined">
+          <input id="next" v-model="next" type="password" placeholder="请输入新密码" required autocomplete="new-password" :aria-invalid="invalid === 'next'" :aria-describedby="invalid === 'next' ? 'password-rule form-message' : 'password-rule'">
         </div>
       </div>
       <div class="field">
@@ -82,6 +82,7 @@ async function submit() {
         </div>
       </div>
     </template>
+    <p v-if="mode !== 'login'" id="password-rule" class="password-rule">15–128 个字符；新密码不能与当前密码相同。</p>
     <p id="form-message" class="form-msg" role="status">{{ error }}</p>
     <button class="login-btn" :disabled="busy" type="submit"><span>{{ busy ? (mode === 'login' ? '正在登录…' : '正在修改…') : (mode === 'login' ? '登录' : '修改密码') }}</span><svg class="ico" aria-hidden="true"><use href="#i-arrow" /></svg></button>
     <div class="auth-base"><span class="fine" aria-hidden="true">INNERSIGHT / CONSOLE</span><button v-if="mode === 'temporary'" type="button" class="text-button" :disabled="busy" @click="emit('logout')">退出登录</button><button v-else-if="mode === 'password'" type="button" class="text-button" :disabled="busy" @click="router.push({ name: 'home' })">取消</button></div>

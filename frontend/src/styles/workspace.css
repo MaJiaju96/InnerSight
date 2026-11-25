@@ -27,8 +27,18 @@ button:disabled { opacity: .55; cursor: default; }
 .error-panel { color: var(--danger); background: var(--danger-soft); }
 .center-state { margin: 24px auto; max-width: 600px; padding: 24px; }
 .center-state > * + * { margin-top: 14px; }
-.account-form.auth { max-width: 560px; width: 100%; margin: 0; background: var(--surface); }
-.list-head { margin-bottom: 22px; }
+.account-form.auth { width: calc(100% + 16px); max-width: 1008px; min-height: 0; margin: 0; padding: 26px 32px 18px; border-radius: 14px; background: var(--surface); box-shadow: none; backdrop-filter: none; }
+.account-form .field { max-width: 560px; margin-top: 12px; }
+.account-form .field input { height: 44px; }
+.account-form .auth-top { display: none; }
+.account-form h1 { margin-top: 0; }
+.temporary-form.auth .form-msg:empty { min-height: 16px; }
+.detail-loading { color: var(--muted); }
+.account-form .form-msg { min-height: 24px; }
+.account-form .login-btn { width: auto; min-width: 140px; gap: 12px; }
+.password-rule { color: var(--muted); font-size: 13px; margin-top: 8px; }
+.list-description { color: var(--muted); margin-bottom: 14px; }
+.list-head { margin-bottom: 8px; }
 .filters { display: flex; align-items: end; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
 .filters label, .drawer-form > label { display: grid; gap: 6px; color: var(--ink); }
 .filters label:first-child { flex: 1 1 220px; max-width: 400px; }
@@ -51,9 +61,22 @@ th, td { padding: 8px 14px; overflow-wrap: anywhere; border-bottom: 1px solid va
 .row-actions, .pagination { display: flex; align-items: center; gap: 4px; }
 .wrap { flex-wrap: wrap; }
 .pagination { justify-content: flex-end; flex-wrap: wrap; gap: 8px; padding: 12px; }
+.pagination select { min-height: 40px; border: 1px solid var(--edge); border-radius: 8px; background: var(--surface); color: var(--ink); padding: 4px 8px; }
 .drawer { position: fixed; inset: 0 0 0 auto; margin: 0; width: min(480px,100vw); max-width: 100vw; height: 100dvh; max-height: 100dvh; background: var(--surface); color: var(--ink); padding: 22px; border: 1px solid var(--line); }
 .drawer::backdrop { background: #0b171780; }
-.drawer.confirmation { inset: 0; margin: auto; height: fit-content; width: min(480px,calc(100vw - 32px)); border-radius: 14px; }
+.drawer.confirmation { inset: 0; margin: auto; height: fit-content; width: min(488px,calc(100vw - 32px)); border-radius: 14px; }
+.drawer.status-confirmation { min-height: min(336px,calc(100dvh - 32px)); }
+.drawer.reset-confirmation { min-height: min(492px,calc(100dvh - 32px)); }
+.drawer.confirmation .drawer-form { grid-template-rows: auto; min-height: 236px; }
+.drawer.reset-confirmation .drawer-form { min-height: 350px; }
+.drawer.confirmation .drawer-actions { align-self: end; margin-top: auto; }
+.detail-identity { display: flex; align-items: center; gap: 16px; border-bottom: 1px solid var(--line); padding: 8px 0 22px; }
+.detail-identity .avatar { width: 48px; height: 48px; flex: 0 0 48px; }
+.detail-identity strong { font-size: 22px; }
+.detail-identity p { color: var(--muted); overflow-wrap: anywhere; }
+.detail-section { margin-top: 8px; }
+.detail-return { display: none; }
+.admin-capabilities { border-top: 1px solid var(--line); padding-top: 14px; }
 .drawer-head { display: flex; justify-content: space-between; align-items: start; gap: 10px; margin-bottom: 18px; }
 .drawer-head h2 { overflow-wrap: anywhere; min-width: 0; }
 .drawer-form { display: grid; gap: 14px; }
@@ -79,5 +102,12 @@ th, td { padding: 8px 14px; overflow-wrap: anywhere; border-bottom: 1px solid va
   .list-head { flex-wrap: wrap; gap: 10px; }
   .work { min-width: 0; }
   .drawer { padding: 16px; }
+  .account-form.auth { width: 100%; padding: 18px 16px; }
+  .drawer.confirmation, .drawer.reset-confirmation .drawer-form { min-height: 0; }
+  .pagination select { min-height: 44px; }
+  .user-detail-drawer .details-list { grid-template-columns: 1fr 1fr; gap: 0; }
+  .user-detail-drawer .details-list > * { padding-block: 12px; border-bottom: 1px solid var(--line); }
+  .user-detail-drawer .drawer-form { padding-bottom: 76px; }
+  .detail-return { display: grid; position: fixed; inset: auto 0 0; padding: 14px 16px max(14px,env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: var(--surface); }
   .filters label:first-child { max-width: none; }
 }

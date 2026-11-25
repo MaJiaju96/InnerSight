@@ -32,8 +32,8 @@ export async function request<T>(path: string, method = 'GET', data?: unknown): 
 
 export function message(error: unknown) { return error instanceof ApiError ? error.message : '操作未完成，请稍后重试。' }
 export function can(profile: Profile | null, permission: Permission) { return !!profile && !profile.temporary && (profile.admin || profile.permissions.includes(permission)) }
-export function listQuery(search: string, status: string, page: number) {
-  const query = new URLSearchParams({ search: search.trim(), page: String(page) })
+export function listQuery(search: string, status: string, page: number, size = 20) {
+  const query = new URLSearchParams({ search: search.trim(), page: String(page), size: String(size) })
   if (status) query.set('enabled', status)
   return `?${query}`
 }

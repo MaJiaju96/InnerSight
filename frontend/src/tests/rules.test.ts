@@ -12,10 +12,11 @@ describe('权限状态', () => {
     expect(can({ ...profile, temporary: true, admin: true }, 'user:read')).toBe(false)
   })
   it('筛选参数编码后发送，不受输入中的 & 干扰', () => {
-    const query = new URLSearchParams(listQuery(' test&enabled=true ', 'false', 2))
+    const query = new URLSearchParams(listQuery(' test&enabled=true ', 'false', 2, 50))
     expect(query.get('search')).toBe('test&enabled=true')
     expect(query.get('enabled')).toBe('false')
     expect(query.get('page')).toBe('2')
+    expect(query.get('size')).toBe('50')
   })
 })
 describe('双主题', () => {
