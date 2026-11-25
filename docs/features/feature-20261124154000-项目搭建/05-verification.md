@@ -92,3 +92,10 @@
 | 性能 | 核查参数化分页与批量角色摘要；远程测试库 1,000 用户／20 角色下每页 20、100 条均为 3 次 SELECT。 | 已有 AC-11 基线通过，不作容量承诺。 |
 
 结论：同意进入 `test` 回归，不表示已通过正式验收。现有专用测试库已迁移并保留验收数据，不能替代 PRD 所要求的空库，不会自动清库。
+
+## test 候选回归（2026-11-25）
+
+- 需求 `feature-20261124154000-项目搭建`，候选 `b474ce37cbbd2f5a2fc27d49cb816015a5f82b91`，从 `d5cc5e2` 快进合入并推送到 `test`。`master` 未变更，未发布。
+- `mvn -B -f backend/pom.xml '-Dtest=IdentityRulesTest,WebContractTest,MariaDbAcceptanceTest#sessionBoundariesOnExistingTestSchema' verify`：`SELECT VERSION(), DATABASE(): 10.11.19-MariaDB-0+deb12u1 | innersight_test`；`Tests run: 14, Failures: 0, Errors: 0, Skipped: 0`、`BUILD SUCCESS`。这 14 项只统计实际选择的单测、接口契约及已迁移库 AC-02 回滚场景，不包含空库集成入口。
+- `npm run typecheck`、`npm run test`（`Tests 4 passed (4)`）、`npm run build`（`✓ 42 modules transformed.`）通过；`npm run test:visual` 输出 `Browser smoke PASS`，使用固定 API。
+- 正式全量验收未完成。现有测试库不是空库，AC-01 空库步骤不执行；未清库、未重跑完整 AC-01–AC-11。历史功能分支实库证据保留，不视作当前候选的正式通过。
