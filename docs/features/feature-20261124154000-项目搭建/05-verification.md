@@ -130,3 +130,9 @@
 - AC-01 的空库双独立 CLI 启动仍未执行。既有 `innersight_master` 不清库；须先分配独立空库和最小权限账号，才能补做这一项。
 
 结论：验收工具与证据可以归档；S0 验收保留待补测状态，不登记发布。
+
+### 两项 UI 差异修复复验
+
+- 主动改密的「取消」回首页，未提交输入被清空、会话保留；强制改密仍只有改密和退出。用户列表桌面列顺序改为「登录名／显示名／状态／角色／操作」，可通过登录名打开详情；角色列表不变。
+- `npm --prefix frontend run typecheck`、`run test`（`Tests 4 passed (4)`）、`run build`（`42 modules transformed`）、`run test:visual` 均退出 0。Edge 输出 `Browser smoke PASS`，覆盖桌面列顺序、详情入口、主动改密取消、双主题和 320／1280px；使用固定 API，不推断为视觉签核或新候选实库通过。
+- 未改后端、业务接口和 schema；完整验收仍缺独立空库双 CLI 和逐画板核对。未推进 `master`。
