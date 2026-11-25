@@ -6,12 +6,13 @@ const browser = await chromium.launch({ executablePath: process.env.INNERSIGHT_B
 const errors = []
 const profile = { id: 1, login: 'reader', name: '只读账号', temporary: false, admin: false, roles: [], permissions: ['user:read'] }
 let signedIn = false
+let failFirstUserList = true
 try {
   const context = await browser.newContext({ viewport: { width: 320, height: 760 }, colorScheme: 'dark', reducedMotion: 'reduce' })
   const page = await context.newPage()
   page.setDefaultTimeout(10000)
   page.on('pageerror', error => errors.push(error.message))
-  // 固定的 API 响应只用于浏览器布局与交互检查，不替代真实 MySQL 验收。
+  // 固定的 API 响应只用于浏览器布局与交互检查，不替代真实 MariaDB 验收。
   await page.route(url => url.pathname.startsWith('/api/'), async route => {
     const endpoint = new URL(route.request().url()).pathname
     if (endpoint === '/api/session' && route.request().method() === 'POST') { signedIn = true; return route.fulfill({json:{temporary:false}}) }
@@ -19,7 +20,14 @@ try {
     if (endpoint === '/api/session') return route.fulfill(signedIn ? {json:profile} : {status:401, json:{code:'SESSION_EXPIRED',message:'请重新登录。'}})
     const user = {id:2, login:'viewed', name:'受检账号', enabled:true, revision:0, roles:[]}
     if (endpoint === '/api/users/2') return route.fulfill({json:user})
-    if (endpoint === '/api/users') return route.fulfill({json:{items:[user],total:1,size:20,page:0}})
+    if (endpoint === '/api/users') {
+      if (failFirstUserList) {
+        failFirstUserList = false
+        return route.fulfill({status:503, json:{code:'UNAVAILABLE',message:'服务暂不可用，请稍后重试。'}})
+      }
+      const search = new URL(route.request().url()).searchParams.get('search')
+      return route.fulfill({json:search ? {items:[],total:0,size:20,page:0} : {items:[user],total:1,size:20,page:0}})
+    }
     throw new Error(`Unexpected fixture request: ${endpoint}`)
   })
   const noOverflow = async () => assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),true)
@@ -43,6 +51,19 @@ try {
   assert.equal(await page.getByRole('link',{name:'角色管理'}).count(),0)
   await noOverflow()
   await page.getByRole('link',{name:/用户管理/}).click()
+  const listError = page.getByRole('alert').filter({hasText:'服务暂不可用，请稍后重试。'})
+  await listError.waitFor()
+  const emptyList = page.getByText('没有符合条件的记录',{exact:true})
+  assert.equal(await emptyList.count(),0)
+  assert.equal(await page.getByRole('button',{name:'查看',exact:true}).count(),0)
+  await listError.getByRole('button',{name:'重试',exact:true}).click()
+  await page.getByRole('button',{name:'查看',exact:true}).waitFor()
+  assert.equal(await listError.count(),0)
+  await page.getByPlaceholder('登录名或显示名').fill('no-matches')
+  await page.getByRole('button',{name:'查询',exact:true}).click()
+  await emptyList.waitFor()
+  assert.equal(await listError.count(),0)
+  await page.getByRole('button',{name:'清除筛选',exact:true}).click()
   await page.getByRole('button',{name:'查看',exact:true}).waitFor()
   assert.equal(await page.getByRole('button',{name:'新建用户'}).count(),0)
   await noOverflow()
@@ -81,5 +102,5 @@ try {
   await page.clock.fastForward(3100)
   assert.equal(await logoutNotice.count(),0)
   assert.deepEqual(errors,[])
-  console.log('Browser smoke PASS: system/hand-picked themes, input persistence, refresh, readonly navigation, modal Escape/focus, 320px/1280px no overflow, glass logout notice horizontally centered at the theme-control offset, dismissed after 3s, 0 JS exceptions (fixture API).')
+  console.log('Browser smoke PASS: system/hand-picked themes, input persistence, refresh, readonly navigation, 503/retry and empty-result distinction, modal Escape/focus, 320px/1280px no overflow, glass logout notice horizontally centered at the theme-control offset, dismissed after 3s, 0 JS exceptions (fixture API).')
 } finally { await browser.close() }
