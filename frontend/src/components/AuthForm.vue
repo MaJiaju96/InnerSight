@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { nextTick, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { ApiError, message, request } from '../api'
 
 const props = defineProps<{ mode: 'login' | 'temporary' | 'password'; notice: string }>()
@@ -7,6 +8,7 @@ const emit = defineEmits<{ signedIn: []; changed: []; logout: []; expired: [] }>
 const login = ref(''), current = ref(''), next = ref(''), repeat = ref(''), error = ref(''), busy = ref(false), visible = ref(false)
 const invalid = ref('')
 const form = ref<HTMLFormElement>()
+const router = useRouter()
 watch(() => props.mode, () => { current.value = next.value = repeat.value = error.value = ''; invalid.value = ''; visible.value = false })
 function fail(field: string, text: string) {
   invalid.value = field; error.value = text
@@ -82,6 +84,6 @@ async function submit() {
     </template>
     <p id="form-message" class="form-msg" role="status">{{ error }}</p>
     <button class="login-btn" :disabled="busy" type="submit"><span>{{ busy ? (mode === 'login' ? '正在登录…' : '正在修改…') : (mode === 'login' ? '登录' : '修改密码') }}</span><svg class="ico" aria-hidden="true"><use href="#i-arrow" /></svg></button>
-    <div class="auth-base"><span class="fine" aria-hidden="true">INNERSIGHT / CONSOLE</span><button v-if="mode !== 'login'" type="button" class="text-button" :disabled="busy" @click="emit('logout')">退出登录</button></div>
+    <div class="auth-base"><span class="fine" aria-hidden="true">INNERSIGHT / CONSOLE</span><button v-if="mode === 'temporary'" type="button" class="text-button" :disabled="busy" @click="emit('logout')">退出登录</button><button v-else-if="mode === 'password'" type="button" class="text-button" :disabled="busy" @click="router.push({ name: 'home' })">取消</button></div>
   </form>
 </template>
