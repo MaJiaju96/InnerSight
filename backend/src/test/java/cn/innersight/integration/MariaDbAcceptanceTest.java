@@ -6,6 +6,7 @@ import cn.innersight.common.error.ApiException;
 import cn.innersight.role.service.RoleService;
 import cn.innersight.user.service.UserService;
 
+import java.util.regex.Pattern;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -38,16 +39,20 @@ import static org.junit.jupiter.api.Assertions.*;
 @EnabledIfEnvironmentVariable(named="INNERSIGHT_TEST_DB_URL", matches=".+")
 class MariaDbAcceptanceTest {
     @Test void initializationAuthorizationRevocationAndStaleWrites() throws Exception {
-        var settings = checkedDatabase();
+        assertEquals("master", System.getenv("INNERSIGHT_TEST_SCOPE"),
+                "环境不符，未执行：空库验收须显式设置 INNERSIGHT_TEST_SCOPE=master");
+        var settings = checkedDatabase("innersight_master");
         var preflight = settings.jdbc();
-        assertEquals(0, preflight.queryForObject("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE()", Integer.class), "环境不符，未执行：请提供空测试库；本测试不清理旧数据");
+        int tables = preflight.queryForObject("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE()", Integer.class);
+        System.out.printf("AC-01: tables before migration=%d%n", tables);
+        assertEquals(0, tables, "环境不符，未执行：请提供空测试库；本测试不清理旧数据");
         var clock = new TestClock();
         try (var context = openContext(settings, clock, true)) {
             var identity = context.getBean(IdentityService.class);
             var users = context.getBean(UserService.class);
             var roleService = context.getBean(RoleService.class);
             var db = context.getBean(JdbcTemplate.class);
-            String temporary = UUID.randomUUID().toString(), next = UUID.randomUUID().toString();
+            String temporary = UUID.randomUUID().toString(), next = acceptancePassword("INNERSIGHT_MASTER_OWNER_PASSWORD");
             var tasks = Executors.newFixedThreadPool(2);
             try {
                 var a = tasks.submit(() -> identity.initialize("root.test", "验收管理员", temporary));
@@ -98,7 +103,7 @@ class MariaDbAcceptanceTest {
     @Test
     @EnabledIfEnvironmentVariable(named="INNERSIGHT_TEST_EXISTING_SCHEMA", matches="true")
     void sessionBoundariesOnExistingTestSchema() {
-        var settings = checkedDatabase();
+        var settings = checkedDatabase("innersight_test");
         assertEquals(1, settings.jdbc().queryForObject("SELECT COUNT(*) FROM flyway_schema_history WHERE version='1' AND success=TRUE", Integer.class));
         var clock = new TestClock();
         try (var context = openContext(settings, clock, false)) {
@@ -118,11 +123,18 @@ class MariaDbAcceptanceTest {
         }
     }
 
+    // 可通过进程环境把一次性密码交给后续浏览器验收，不写日志或文件。
+    private static String acceptancePassword(String variable) {
+        String password = System.getenv(variable);
+        return password == null ? UUID.randomUUID().toString() : password;
+    }
+
     private record TestDatabase(String url, String user, String password, JdbcTemplate jdbc) {}
 
-    private static TestDatabase checkedDatabase() {
+    private static TestDatabase checkedDatabase(String expectedDatabase) {
         String url = System.getenv("INNERSIGHT_TEST_DB_URL");
-        assertTrue(url.matches("jdbc:mariadb://[^/?;]+/innersight_test(?:\\?[^\\r\\n]*)?"), "集成测试仅接受独立 innersight_test 库");
+        assertTrue(url.matches("jdbc:mariadb://[^/?;]+/" + Pattern.quote(expectedDatabase) + "(?:\\?[^\\r\\n]*)?"),
+                "环境不符，未执行：仅接受专用库 " + expectedDatabase);
         String user = System.getenv("INNERSIGHT_TEST_DB_USER");
         String pass = System.getenv("INNERSIGHT_TEST_DB_PASSWORD");
         assertNotNull(user); assertNotNull(pass);
@@ -134,7 +146,7 @@ class MariaDbAcceptanceTest {
             System.out.printf("SELECT VERSION(), DATABASE(): %s | %s%n", version, database);
             assertTrue(version.matches("(?:5\\.5\\.5-)?10\\.11\\.19-MariaDB(?:[-+].*)?"),
                     "环境不符，未执行：要求 MariaDB Server 10.11.19");
-            assertEquals("innersight_test", database, "环境不符，未执行：不是专用测试库");
+            assertEquals(expectedDatabase, database, "环境不符，未执行：不是专用测试库");
             return true;
         });
         return new TestDatabase(url, user, pass, preflight);
@@ -292,7 +304,7 @@ class MariaDbAcceptanceTest {
                 () -> users.assign(operator, owner.id(), owner.revision(), Set.of())).status);
         assertEquals(owner, users.user(operator, owner.id()));
 
-        String temp = UUID.randomUUID().toString(), password = UUID.randomUUID().toString();
+        String temp = UUID.randomUUID().toString(), password = acceptancePassword("INNERSIGHT_MASTER_PEER_PASSWORD");
         users.createUser(operator, "second.admin", "第二位管理员", temp);
         var peer = users.users(operator, "second.admin", null, 0, 20).items().get(0);
         users.assign(operator, peer.id(), peer.revision(), Set.of(adminRole));
