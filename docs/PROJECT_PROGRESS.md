@@ -4,7 +4,7 @@
 
 | 里程碑 | 状态 | 当前依据 | 下一步 / 退出条件 |
 |---|---|---|---|
-| S0 工程骨架与通用后台 | 双主题已指定为开发依据，S0 开发中 | [项目搭建需求分析](features/feature-20261124154000-项目搭建/01-requirements.md)与 [PRD](features/feature-20261124154000-项目搭建/02-prd.md)已确认，[UI 文字设计](features/feature-20261124154000-项目搭建/03-ui-design.md)与 Pixso [浅色总览](https://pixso.cn/app/design/NYBXHNEYrfdASgLhilojEg?page-id=6%3A198&item-id=6%3A199)、[深色总览](https://pixso.cn/app/design/NYBXHNEYrfdASgLhilojEg?page-id=6%3A2344&item-id=6%3A2345)已成稿，每套 21 张。登录与首页另有[可切主题的动效样例](features/feature-20261124154000-项目搭建/04-motion-study.html)。GitHub 默认及稳定基线分支为 `master`；`master`、`test`、功能分支均以 `d5cc5e2` 为起点，分支建立不代表验收或发布。已确认[数据库技术方案](02-technical-design.md)：主库为 MariaDB Server 10.11.19。 | MariaDB 适配已完成并通过同版本本地实库自测；正式 `test` 候选验收未执行。功能分支已完成基线回归，并补充登录、退出及依赖故障接口契约自测；远程专用测试库已通过 AC-08／AC-09／AC-11 后端实库自测；已通过隔离后端真实断库恢复及双浏览器授权闭环自测；待完整代码自审和正式验收。以两套 Pixso 画板实施，视觉验收另记。真实登录、管理及撤权在测试分支验收并发布后，登记 S0 交付依据。 |
+| S0 工程骨架与通用后台 | 已合入 `master`，未发布 | `master` 候选 `b474ce3`（与 `test` 部分回归候选相同）；[新流程](../AGENTS.md)：`dev` 开发验收、`test` 部分回归、`master` 全量回归。既有候选按发起人指示先合入 `master`。 | 远程 `innersight_master` 空库迁移、后端、双浏览器主线和隔离断库已实测，见 [S0 验收记录](features/feature-20261124154000-项目搭建/05-verification.md#master-候选验收2026-11-25)；UI 已发现两处差异，逐画板签核与 AC-01 空库双 CLI 待补，未打发布标签。 |
 | S1 业务基础 | 未开始 | 项目书规划；无当期交付 | 独立拆分题库、固定套题与规则组卷等需求。 |
 | S2 文字面试与复盘 | 未开始 | 项目书规划；无当期交付 | 结合 S1 的可用题库，拆分文字面试、追问与证据评价。 |
 | S3 主项目增强 | 候选，未排期 | 方向已记录 | 按实际训练中发现的问题立项。 |

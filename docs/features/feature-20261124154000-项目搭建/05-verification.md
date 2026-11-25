@@ -92,3 +92,41 @@
 | 性能 | 核查参数化分页与批量角色摘要；远程测试库 1,000 用户／20 角色下每页 20、100 条均为 3 次 SELECT。 | 已有 AC-11 基线通过，不作容量承诺。 |
 
 结论：同意进入 `test` 回归，不表示已通过正式验收。现有专用测试库已迁移并保留验收数据，不能替代 PRD 所要求的空库，不会自动清库。
+
+## test 候选回归（2026-11-25）
+
+- 需求 `feature-20261124154000-项目搭建`，候选 `b474ce37cbbd2f5a2fc27d49cb816015a5f82b91`，从 `d5cc5e2` 快进合入并推送到 `test`。`master` 未变更，未发布。
+- `mvn -B -f backend/pom.xml '-Dtest=IdentityRulesTest,WebContractTest,MariaDbAcceptanceTest#sessionBoundariesOnExistingTestSchema' verify`：`SELECT VERSION(), DATABASE(): 10.11.19-MariaDB-0+deb12u1 | innersight_test`；`Tests run: 14, Failures: 0, Errors: 0, Skipped: 0`、`BUILD SUCCESS`。这 14 项只统计实际选择的单测、接口契约及已迁移库 AC-02 回滚场景，不包含空库集成入口。
+- `npm run typecheck`、`npm run test`（`Tests 4 passed (4)`）、`npm run build`（`✓ 42 modules transformed.`）通过；`npm run test:visual` 输出 `Browser smoke PASS`，使用固定 API。
+- 正式全量验收未完成。现有测试库不是空库，AC-01 空库步骤不执行；未清库、未重跑完整 AC-01–AC-11。历史功能分支实库证据保留，不视作当前候选的正式通过。
+
+## master 候选验收（2026-11-25）
+
+- 需求 `feature-20261124154000-项目搭建`；远程 `master`、`test` 候选 `b474ce37cbbd2f5a2fc27d49cb816015a5f82b91`。功能分支工作树仅叠加测试入口及文档调整，`git diff --name-only origin/master -- frontend backend/src/main backend/pom.xml` 无输出；不把工作树视为新的已发布候选。
+- 远程专用库只读及写入前预检：`SELECT VERSION(), DATABASE(): 10.11.19-MariaDB-0+deb12u1 | innersight_master`，`AC-01: tables before migration=0`；`Successfully applied 1 migration to schema innersight_master, now at version v1`。用了已确认的不强制 TLS 连接，不动开发库和部分回归库。另用不可解析的占位主机和 `innersight_dev` URL 做负向验收，JUnit 在连接前拒绝：`环境不符，未执行：仅接受专用库 innersight_master`。
+- 后端：`mvn -B -f backend/pom.xml '-Dtest=IdentityRulesTest,WebContractTest,MariaDbAcceptanceTest#initializationAuthorizationRevocationAndStaleWrites' verify` 输出 `Tests run: 14, Failures: 0, Errors: 0, Skipped: 0`、`BUILD SUCCESS`。前端 `npm run typecheck`、`npm run test`、`npm run build` 均退出 `0`，`Tests 4 passed (4)`、`42 modules transformed`。`tests/visual-smoke.mjs` 输出 `Browser smoke PASS`：浅／深色、320／1280px、只读布局、失败／重试、空态、抽屉焦点、退出提示位置与 3 秒消失；该脚本使用固定 API。
+- 两个独立 Edge 上下文连接临时 Vite 与 Spring Boot（回环监听），Spring Boot 连接远程验收库。前两次临时驱动因已登录状态与无角色首页标题定位错误停止；修正驱动后退出 `0`，未改应用。试写验收数据保留。结束后 15181／18081 已关闭，未启动本地数据库或 Docker。
+
+| 用例 | 本轮实测覆盖 | 未覆盖或说明 |
+|---|---|---|
+| AC-01 | 空库 V1；同一应用上下文中两个初始化调用并发只成功一次；CLI 重跑不改凭据；实际登录、后端重启后原会话仍可用，清除 Cookie 后也可用原凭据重新登录；审计初始化 1 条，内置角色 1 条，重复初始化账号 0 条。 | 未在空库同时启动两个独立 CLI 进程。 |
+| AC-02 | 实库可控时钟核验认证失败、429、窗口恢复、空闲／绝对过期；浏览器刷新、退出，退出后 API 401。 | 已执行。 |
+| AC-03 | 浏览器临时会话、错当前密码／长度／确认不一致、改密重登；重置后原会话失效、旧密码拒绝、再次要求改密。 | 已执行所列路径。 |
+| AC-04 | 大小写不同同名并发创建得到 204／409、初始无角色、筛选、停用失效、启用重登；用户资料更新和过期写在实库验证。 | 已执行所列路径。 |
+| AC-05 | 拒绝重复编码、未知权限和修改内置角色；绑定人数为 1，停用保留绑定且撤权，启用恢复。 | 未逐项签核停用确认画板。 |
+| AC-06 | 实测未登录、无角色、只读、普通维护者；允许维护者建无角色普通用户，拒绝自授、重置他人密码、修改管理员。 | 已执行所列路径。 |
+| AC-07 | 实库验证双角色并集；双浏览器验证最后一份角色收回后的 403、页面清空及个人首页保留。 | 已执行。 |
+| AC-08 | 自停用、自移除管理员角色被拒；并发交叉停用结果 204／401，仅一项有效写入，存活管理员可登录。 | 已执行。 |
+| AC-09 | 实库对用户资料、角色绑定和角色权限验证 409 与首写保留；非法绑定无部分写入。 | 未对照 Pixso 冲突弹层逐项签核。 |
+| AC-10 | 只切临时应用到远程库的 TCP 链路，存活 200、就绪／列表 503，保存提示结果未知；恢复后原记录未变。核验跨站写入拒绝、浏览器存储／应用日志无本次凭据、生产 Cookie 属性（MockMvc）。审计查询：初始化 1、授权 8、重置 1、失败登录 10；授权和重置均有操作者和对象。 | 未停远程 MariaDB 服务。 |
+| AC-11 | 1,000 用户／20 角色，同一快照筛选与翻页，分页上限 100；20 条 `3 SELECT / 249.92 ms`，100 条 `3 SELECT / 286.12 ms`。 | 实测采样，不作容量承诺。 |
+
+结论：已执行的功能、实库与浏览器用例未发现阻断；两套 Pixso 各 21 张画板已核对清单，逐画板视觉检查尚未完成。按原用例保留 AC-01 未覆盖步骤，不能签为完整 PRD/UI 验收通过或登记发布。验收库现为 9 张表，不能再次作为空库运行 AC-01；不自动清理。
+
+## S0 收尾复核（2026-11-25）
+
+- 在功能分支重跑 `mvn -B -f backend/pom.xml '-Dtest=IdentityRulesTest,WebContractTest' verify`：`Tests run: 13, Failures: 0, Errors: 0, Skipped: 0`、`BUILD SUCCESS`。在 `frontend` 重跑 `npm run typecheck`、`npm run test`、`npm run build`，均退出 0；`Tests 4 passed (4)`、`42 modules transformed`。本轮不写数据库，实库证据沿用上节对同一应用版本的测试。
+- UI 对照发现两处确定差异：画板 17 对应的 UI 文字设计要求主动改密可取消回首页；当前 `AuthForm.vue` 的非登录界面只提供「退出登录」。画板 04／06 对应的 UI 文字设计要求用户列表依次展示登录名、显示名，登录名链接到详情；当前 `AdminList.vue` 先显示显示名并将其设为详情按钮。双主题冒烟不能替代这些检查，逐画板视觉签核仍未完成。
+- AC-01 的空库双独立 CLI 启动仍未执行。既有 `innersight_master` 不清库；须先分配独立空库和最小权限账号，才能补做这一项。
+
+结论：验收工具与证据可以归档；S0 验收保留待补测状态，不登记发布。

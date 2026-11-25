@@ -4,7 +4,7 @@
 
 - Node.js 22.12–24，使用 npm 与 `frontend/package-lock.json`。本次构建使用 Node.js 24.19.0、npm 11.17.0。
 - Java 17、Maven 3.6.3 或更高版本，Spring Boot 3.5.16。执行 `mvn --version` 确认 Maven 实际选用的 JDK。
-- 数据库目标为 MariaDB Server 10.11.19，使用独立的 `innersight_dev`、`innersight_test` 库及账号，默认字符集为 `utf8mb4`。不需要 Docker、AI 服务或外部模型。
+- 数据库目标为 MariaDB Server 10.11.19，使用独立的 `innersight_dev`、`innersight_test`、`innersight_master` 库及账号，默认字符集为 `utf8mb4`。不需要 Docker、AI 服务或外部模型。
 
 后端使用 MariaDB Connector/J 3.5.8、Flyway 11.7.2（均由 Spring Boot BOM 管理）。数据库约定见[技术方案书](02-technical-design.md)。
 
@@ -13,7 +13,7 @@
 - 后端 `backend/src/main/java/cn/innersight` 按 `auth`、`user`、`role`、`health` 分模块。Controller 接收参数、调用 Service 并返回 DTO；事务和授权在 Service；JDBC 查询与写入在 Repository。公共配置、Web 组件、错误处理放在 `common/`。
 - 前端 `frontend/src` 以 `App.vue` 为应用外壳；`router/` 管理路由，`views/` 放页面，`components/` 放共用组件，`api/` 统一请求与接口类型，`composables/` 放主题逻辑，`styles/` 放样式。
 - DBA 负责准备专用库和账号。仓库中的[建库与授权脚本](../backend/sql/00-create-databases.sql)按 MariaDB 10.11.19 编写，首次分段执行；已有专用库和账号时先核对，不重复建账号。表结构由 `backend/src/main/resources/db/migration` 下的 Flyway 迁移维护；后续变化新增版本化文件，不回改已执行的迁移。
-- 远程连接使用支持 TLS 的 MariaDB 入口和与服务端证书匹配的主机名。为 MariaDB Connector/J 配置可信证书和 `sslMode=verify-full`。
+- 远程连接使用支持 TLS 的 MariaDB 入口和与服务端证书匹配的主机名。为 MariaDB Connector/J 配置可信证书和 `sslMode=verify-full`。经批准的专用开发／回归账号可使用 `REQUIRE NONE` 并由客户端指定 `sslMode=disable`；该例外不适用于生产，不修改服务器全局设置。
 
 ## 启动开发环境（数据库适配完成后）
 
@@ -39,5 +39,5 @@
 ## 验证
 
 - 前端在 `frontend` 下执行 `npm run typecheck`、`npm run test`、`npm run build`。运行 Vite 后，将 `INNERSIGHT_BROWSER` 设为本机 Edge 或 Chromium 可执行文件绝对路径，再运行 `npm run test:visual`。这一步使用固定后端响应，只验证浏览器布局和交互。
-- 后端在项目根运行 `mvn -B -f backend/pom.xml verify`。设置测试连接后会启用 `MariaDbAcceptanceTest`；不设置时跳过。用测试账号按[技术方案书](02-technical-design.md)核对服务端版本、库名和空库状态，再设置 `INNERSIGHT_TEST_DB_URL`、`INNERSIGHT_TEST_DB_USER`、`INNERSIGHT_TEST_DB_PASSWORD` 并运行同一命令。用例会向 `innersight_test` 写测试数据，不清库；跳过这一用例的构建不算实库验证。
-- 正式验收使用 `test` 候选提交、专用 MariaDB Server 10.11.19 测试库和两个浏览器会话，按 [PRD 的 AC-01–AC-11](features/feature-20261124154000-项目搭建/02-prd.md#acceptance) 记录真实结果。
+- 后端在项目根运行 `mvn -B -f backend/pom.xml verify`。设置测试连接后会启用 `MariaDbAcceptanceTest`；不设置时跳过。用测试账号按[技术方案书](02-technical-design.md)核对服务端版本、库名和空库状态，再设置 `INNERSIGHT_TEST_DB_URL`、`INNERSIGHT_TEST_DB_USER`、`INNERSIGHT_TEST_DB_PASSWORD` 并运行同一命令。空库用例还必须显式指定 `INNERSIGHT_TEST_SCOPE=master`，目标只允许 `innersight_master`，会迁移并写测试数据，不清库。部分回归使用 `-Dtest=MariaDbAcceptanceTest#sessionBoundariesOnExistingTestSchema` 和 `INNERSIGHT_TEST_EXISTING_SCHEMA=true`，目标只允许 `innersight_test`，测试变更回滚。跳过实库用例的构建不算实库验证。
+- 全量验收使用 `master` 候选提交、专用 MariaDB Server 10.11.19 全量回归库和两个浏览器会话，按 [PRD 的 AC-01–AC-11](features/feature-20261124154000-项目搭建/02-prd.md#acceptance) 记录真实结果。
