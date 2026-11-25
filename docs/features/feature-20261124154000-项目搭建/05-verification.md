@@ -148,3 +148,9 @@
 
 - UI 候选 `3f26901`，功能分支经 `dev` 快进至本地 `test`。仅调整窄屏登录无效状态及主动改密表单间距，不锁死高度。Edge 在浅、深主题实测：15 为 `288×461px`，17 为 `1008×528px`；02 与 10 保留内容自适应（分别 `456×610px`、`488×340px`）。
 - 在 `frontend` 重跑 `npm run typecheck`、`npm run test`（4 项通过）、`npm run build`（42 modules transformed）和 `node tests/visual-s0.mjs`（`captured 52 failed 0`）。`node tests/visual-smoke.mjs` 输出 `Browser smoke PASS`。新增尺寸回归断言；使用模拟 API，未改后端代码、未连数据库，未进入 `master`。
+
+## 折光双主题 UI 验收签核（2026-11-25）
+
+- 发起人确认通过。验收基于 `test` 的 `c91ddb2`，功能代码为 `3f26901`。重新构建后使用 Edge 和模拟 API 复验浅／深色、桌面及 320px 界面：`captured 52 failed 0`，无页面 JS 异常或横向溢出。
+- 画板 15（288×461px）与 17（1008×528px）两套主题均与设计尺寸一致。画板 02／10 同宽，高度分别为 610／340px，较设计高 6／4px；文案与操作完整，接受内容自适应，不要求逐像素一致。
+- 本批 UI 验收通过并纳入稳定分支；未重跑全量 PRD 实库验收，AC-01 空库双 CLI 仍未执行。保留历史实库证据，不将模拟 API 回归当作实库验收；本批未部署或打发布标签。
