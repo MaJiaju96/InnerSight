@@ -9,6 +9,12 @@ const usr={id:2,name:'陈宁',login:'chenning',enabled:true,revision:2,roles:[re
 const profile=(type)=>({...((type==='admin'||type==='temp')?owner:usr),temporary:type==='temp',admin:type==='admin',roles:type==='none'?[]:type==='admin'?[adminRole]:[readRole],permissions:type==='admin'?adminRole.permissions:type==='reader'?readRole.permissions:[]});
 const b=(p,name)=>p.getByRole('button',{name,exact:true});const h=(p,name)=>p.getByRole('heading',{name,exact:true});
 const al=(p,s)=>p.getByText(s,{exact:true});
+async function checkFormSize(form, width, height) {
+ const box=await form.boundingBox();
+ assert.ok(box, 'Expected a visible form');
+ assert.equal(Math.round(box.width),width);
+ assert.ok(Math.abs(box.height-height)<=1, `Expected a ${height}px form, got ${box.height}px`);
+}
 for(const theme of ['light','dark']){
  const run=async(id,who,path,action=async()=>{},opt={})=>{const [width,height]=opt.size||[1280,800];const c=await browser.newContext({viewport:{width,height},colorScheme:theme,reducedMotion:'reduce'});const p=await c.newPage();p.setDefaultTimeout(4000);let state=opt.state,errors=[], lastList;p.on('pageerror',e=>errors.push(e.message));
  try{
@@ -44,9 +50,9 @@ for(const theme of ['light','dark']){
  await run('12','admin','/users',async p=>{await edit(p);await d(p).getByText(/尚未保存/).waitFor();assert.ok(await b(d(p),'保存').isDisabled());});
  await run('13','reader','/users',p=>b(p,'chenning').waitFor(),{size:[320,920]});
  await run('14','reader','/users',async p=>{await user(p);await d(p).getByText('账号资料',{exact:true}).waitFor();await b(d(p),'返回用户列表').waitFor();const box=await p.locator('.detail-return').boundingBox();assert.equal(box.y+box.height,800);},{size:[320,800]});
- await run('15','anon','/login',invalid,{size:[320,800]});
+ await run('15','anon','/login',async p=>{await invalid(p);await checkFormSize(p.locator('.auth'),288,461);},{size:[320,800]});
  await run('16','none','/',async p=>{await h(p,'后台首页').waitFor();assert.equal(await p.getByRole('link',{name:'用户管理'}).count(),0);await p.locator('.account-wrap summary').click()});
- await run('17','admin','/password',async p=>{await b(p,'取消').waitFor();await p.locator('#password-rule').waitFor();assert.equal((await p.locator('.account-form').boundingBox()).width,1008);});
+ await run('17','admin','/password',async p=>{await b(p,'取消').waitFor();await p.locator('#password-rule').waitFor();await checkFormSize(p.locator('.account-form'),1008,528);});
  await run('18','admin','/users',async p=>{await user(p);await b(d(p),'重置密码').click();await d(p).locator('#record-password').waitFor();await d(p).getByText('登录名：chenning',{exact:true}).waitFor()});
  await run('19','admin','/roles',async p=>{await detail(p,'角色管理','内置管理员');await d(p).getByText('管理员专有能力',{exact:true}).waitFor();assert.equal(await b(d(p),'编辑角色').count(),0);});
  await run('20-loading','reader','/users',p=>al(p,'正在加载用户…').waitFor(),{state:'loading'});

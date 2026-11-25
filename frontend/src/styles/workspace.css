@@ -87,6 +87,11 @@ th, td { padding: 8px 14px; overflow-wrap: anywhere; border-bottom: 1px solid va
 .details-list { display: grid; gap: 10px; grid-template-columns: minmax(70px,.35fr) minmax(0,1fr); margin: 0; }
 .details-list dd { margin: 0; overflow-wrap: anywhere; }
 .details-list dt { color: var(--muted); }
+@media (min-width: 761px) {
+  .account-form.auth { padding-block: 22px 16px; }
+  .account-form .field { margin-top: 9px; }
+  .account-form .form-msg:empty { min-height: 22px; }
+}
 @media (max-width: 900px) {
   .in-workspace .mast-inner { gap: 8px; }
   .menu-toggle { display: inline-flex; align-items: center; min-height: 44px; padding: 0 8px; }

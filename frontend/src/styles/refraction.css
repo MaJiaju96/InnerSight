@@ -133,6 +133,10 @@ h1,h2,p,figure,blockquote{margin:0} [hidden]{display:none!important}
 }
 @media(max-width:420px){
  .login-frame{padding-inline:16px}
+ .auth:has(#login):has([aria-invalid=true]){padding-block:30px 19px}
+ .auth:has(#login):has([aria-invalid=true]) .field{margin-top:23px}
+ .auth:has(#login):has([aria-invalid=true]) .field+.field{margin-top:17px}
+ .auth:has(#login):has([aria-invalid=true]) .form-msg{min-height:37px;overflow-wrap:anywhere}
  .mast-inner,.in-workspace .mast-inner{padding-inline:10px;gap:6px}.mast-actions{gap:6px}.brand{gap:5px}.brand>.ico{width:21px;height:21px}.brand-type b{font-size:19px}.brand-type span{font-size:9px;letter-spacing:0}
  .mode{width:44px}.mode-face{padding:0;gap:0}.mode-text,.acct-name{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}.menu-trigger{height:44px;gap:2px;padding:3px 4px}.menu-trigger .avatar{width:25px;height:25px;font-size:13px}.menu-trigger .chev{width:12px;height:12px}.auth-desc{font-size:13px}.panel-foot .fine{font-size:9px}
 }
